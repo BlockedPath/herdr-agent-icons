@@ -57,10 +57,19 @@ Any text works, including Nerd Font glyphs if your terminal font has them.
 `fonts/CodexIcon.ttf` is a one-glyph font with the Codex cloud-and-prompt icon
 at U+F9000. Terminals can only draw text, so the icon needs this font:
 
-1. Install the font.
-   - Linux: copy it to `~/.local/share/fonts/` and run `fc-cache -f`.
-   - macOS: copy it to `~/Library/Fonts/`.
-   - Windows (for WSL): right-click the file and choose Install.
+1. Download and install the font:
+   [CodexIcon.ttf](https://github.com/BlockedPath/herdr-agent-icons/raw/main/fonts/CodexIcon.ttf).
+   - Linux: save it to `~/.local/share/fonts/` and run `fc-cache -f`.
+   - macOS: save it to `~/Library/Fonts/`.
+   - Windows (for WSL): download it in Windows, right-click the file and
+     choose Install.
+
+   On Linux, in one go:
+
+   ```bash
+   mkdir -p ~/.local/share/fonts && curl -fsSL -o ~/.local/share/fonts/CodexIcon.ttf https://github.com/BlockedPath/herdr-agent-icons/raw/main/fonts/CodexIcon.ttf && fc-cache -f
+   ```
+
 2. Make your terminal fall back to it. Many terminals pick up installed fonts
    on their own. Windows Terminal needs it listed in the profile's font face,
    for example `"face": "FiraCode Nerd Font, Codex Icon"`, and a full restart.
@@ -74,6 +83,27 @@ herdr plugin action invoke blockedpath.agent-icons.apply
 If you see an empty box, the terminal has not loaded the font. This has only
 been tested in Windows Terminal with WSL. To color it, use
 `{ equals = "\U000F9000", fg = "#7b8cff" }` in the rules below.
+
+## Make your own icon
+
+`tools/make-icon-font.py` traces any image into a one-glyph font, the same way
+`CodexIcon.ttf` was made. Use a PNG with a white or transparent background;
+the shape is everything that is opaque and not near-white. Fonts hold a single
+color, so gradients become a flat shape that you tint with a color rule.
+
+```bash
+pip install fonttools numpy pillow potracer
+python tools/make-icon-font.py icon.png MyIcon.ttf --family "My Icon" --codepoint F9001 --preview preview.png
+```
+
+- `--codepoint` is a private-use codepoint in hex. Give each icon its own,
+  for example `F9001`, `F9002`, ... (`F9000` is the Codex cloud).
+- `--sharp` keeps hard corners, for pixel art.
+- `--preview` writes a PNG so you can check the trace before installing.
+
+Then install `MyIcon.ttf` and add its family name to your terminal's fallback
+fonts, as in the Codex steps above. The script prints the `printf` line that
+adds the glyph to `icons.conf`; replace `AGENT` with the agent id.
 
 ## Colors
 
