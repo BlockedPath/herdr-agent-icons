@@ -1,0 +1,22 @@
+id = "blockedpath.agent-icons"
+name = "Agent Icons"
+version = "0.1.0"
+min_herdr_version = "0.9.3"
+description = "Show icons instead of agent names in the agent sidebar"
+platforms = ["linux", "macos"]
+
+# Existing panes, when the herdr server starts.
+[[startup]]
+command = ["bash", "agent-icons.sh"]
+
+# New agents, as they appear.
+[[events]]
+on = "pane.agent_detected"
+command = ["bash", "agent-icons.sh"]
+
+# Manual re-apply: herdr plugin action invoke blockedpath.agent-icons.apply
+[[actions]]
+id = "apply"
+title = "Apply agent icons"
+contexts = ["workspace"]
+command = ["bash", "agent-icons.sh"]
