@@ -3,6 +3,8 @@
 A [herdr](https://herdr.dev) plugin that shows an icon instead of the agent name
 (`claude`, `codex`, `grok`, `pi`, ...) in the agent sidebar.
 
+![Agent sidebar with icons for pi, Claude, Codex and Grok](screenshot.png)
+
 It sets each agent pane's display name with `herdr pane report-metadata --display-agent`:
 
 - when the herdr server starts (existing panes)
