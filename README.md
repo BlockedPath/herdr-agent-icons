@@ -52,6 +52,29 @@ gemini=
 
 Any text works, including Nerd Font glyphs if your terminal font has them.
 
+## Codex cloud icon (optional)
+
+`fonts/CodexIcon.ttf` is a one-glyph font with the Codex cloud-and-prompt icon
+at U+F9000. Terminals can only draw text, so the icon needs this font:
+
+1. Install the font.
+   - Linux: copy it to `~/.local/share/fonts/` and run `fc-cache -f`.
+   - macOS: copy it to `~/Library/Fonts/`.
+   - Windows (for WSL): right-click the file and choose Install.
+2. Make your terminal fall back to it. Many terminals pick up installed fonts
+   on their own. Windows Terminal needs it listed in the profile's font face,
+   for example `"face": "FiraCode Nerd Font, Codex Icon"`, and a full restart.
+3. Point the plugin at the glyph and re-apply:
+
+```bash
+printf 'codex=\xf3\xb9\x80\x80\n' >> "$(herdr plugin config-dir blockedpath.agent-icons)/icons.conf"
+herdr plugin action invoke blockedpath.agent-icons.apply
+```
+
+If you see an empty box, the terminal has not loaded the font. This has only
+been tested in Windows Terminal with WSL. To color it, use
+`{ equals = "\U000F9000", fg = "#7b8cff" }` in the rules below.
+
 ## Colors
 
 Plugins only supply the icon text. Colors are sidebar rules in
@@ -74,4 +97,6 @@ Then run `herdr server reload-config`.
 
 ## License
 
-MIT
+MIT for the code. The glyph in `fonts/CodexIcon.ttf` is traced from OpenAI's
+Codex app icon; that logo belongs to OpenAI and is not covered by the MIT
+license.
