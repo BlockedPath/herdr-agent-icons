@@ -77,7 +77,21 @@ fb.setupCharacterMap({codepoint: "icon"})
 fb.setupGlyf({".notdef": TTGlyphPen(None).glyph(), "icon": glyph_pen.glyph()})
 fb.setupHorizontalMetrics({".notdef": (ADVANCE, 0), "icon": (ADVANCE, 0)})
 fb.setupHorizontalHeader(ascent=800, descent=-200)
-fb.setupNameTable({"familyName": args.family, "styleName": "Regular"})
+# Core Text and Ghostty ignore a face that only has name IDs 1 and 2 and
+# substitute LastResort, which draws a boxed question mark. IDs 3, 4, and 6
+# are required. The PostScript name cannot contain spaces.
+style = "Regular"
+ps_name = "".join(ch for ch in args.family if ch.isalnum()) + "-" + style
+fb.setupNameTable({
+    "familyName": args.family,
+    "styleName": style,
+    "uniqueFontIdentifier": f"1.000;{ps_name}",
+    "fullName": f"{args.family} {style}",
+    "version": "Version 1.000",
+    "psName": ps_name,
+    "typographicFamily": args.family,
+    "typographicSubfamily": style,
+})
 fb.setupOS2(sTypoAscender=800, sTypoDescender=-200, usWinAscent=800, usWinDescent=200)
 fb.setupPost(isFixedPitch=1)
 fb.font["OS/2"].panose.bProportion = 9  # monospaced, so terminals accept it
