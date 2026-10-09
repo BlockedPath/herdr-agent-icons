@@ -43,4 +43,24 @@ step "python venv for tools/make-icon-font.py"
 uv pip install --quiet --python .venv fonttools numpy pillow potracer
 .venv/bin/python -c 'import fontTools, numpy, PIL, potrace' && echo "python deps ok"
 
+# --- Orb notes for agents -------------------------------------------------
+# The README says to `pip install` the font-tool deps; point agents at .venv
+# instead so they do not reinstall them into the system Python.
+step "agent notes"
+agents_md="$HOME/.config/amp/AGENTS.md"
+notes_marker="## herdr-agent-icons orb"
+if grep -Fqx "$notes_marker" "$agents_md" 2>/dev/null; then
+  echo "already in $agents_md"
+else
+  mkdir -p "$(dirname "$agents_md")"
+  cat >> "$agents_md" <<EOF
+
+$notes_marker
+
+- \`$repo_root/.venv\` already has fonttools, numpy, pillow, and potracer. Run \`tools/make-icon-font.py\` with \`.venv/bin/python\`; do not run the README's \`pip install\`.
+- \`jq\`, \`shellcheck\`, and the \`herdr\` CLI are installed. No herdr server runs in the orb, so \`herdr agent list\` fails. Test \`agent-icons.sh\` by pointing \`HERDR_BIN_PATH\` at a stub script.
+EOF
+  echo "appended to $agents_md"
+fi
+
 step "done"
