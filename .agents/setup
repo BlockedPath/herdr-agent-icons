@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+# Prepares a fresh Amp orb for this repository. Idempotent: safe to rerun on a
+# stale snapshot. Installs the plugin's runtime (bash + jq + herdr CLI), a bash
+# linter, and the Python deps for tools/make-icon-font.py.
+set -euo pipefail
+
+repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$repo_root"
+
+step() { printf '\n==> %s (%ss elapsed)\n' "$1" "$SECONDS"; }
+
+# --- System packages ------------------------------------------------------
+# jq: icon/harness lookup in agent-icons.sh. shellcheck: lint for the script.
+step "system packages"
+missing=()
+for pkg in jq shellcheck; do
+  dpkg -s "$pkg" >/dev/null 2>&1 || missing+=("$pkg")
+done
+if [ "${#missing[@]}" -gt 0 ]; then
+  export DEBIAN_FRONTEND=noninteractive
+  sudo apt-get update -qq
+  sudo apt-get install -y -qq "${missing[@]}"
+else
+  echo "jq and shellcheck already installed"
+fi
+
+# --- herdr CLI ------------------------------------------------------------
+# The plugin's host program. The installer puts the binary in ~/.local/bin,
+# which is already on the orb's login PATH. There is no server running in the
+# orb; the binary is here for `herdr --version`, `herdr plugin link`, and
+# driving the script against a server an agent starts itself.
+step "herdr CLI"
+if command -v herdr >/dev/null 2>&1; then
+  echo "herdr already installed: $(herdr --version)"
+else
+  curl -fsSL https://herdr.dev/install.sh | sh
+  "$HOME/.local/bin/herdr" --version
+fi
+
+# --- Python deps for tools/make-icon-font.py ------------------------------
+step "python venv for tools/make-icon-font.py"
+[ -d .venv ] || uv venv --quiet .venv
+uv pip install --quiet --python .venv fonttools numpy pillow potracer
+.venv/bin/python -c 'import fontTools, numpy, PIL, potrace' && echo "python deps ok"
+
+step "done"

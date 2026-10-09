@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# Runs every time the orb wakes. Fast sanity check only; installs live in
+# .agents/setup.
+set -euo pipefail
+
+for tool in bash jq herdr; do
+  if ! command -v "$tool" >/dev/null 2>&1; then
+    echo "missing $tool; rerun .agents/setup" >&2
+    exit 1
+  fi
+done
+echo "ok: $(jq --version), $(herdr --version)"
