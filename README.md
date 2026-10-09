@@ -355,6 +355,14 @@ fallback face, and fully quit the terminal. Config reload does not load fonts.
 They are the same font, one cell each. Increase the terminal font size. The
 plugin cannot scale a single sidebar token.
 
+## Tests
+
+Run `bash tests/agent-icons.sh` with Bash and `jq` installed. The suite uses a
+temporary Herdr stub; no running server is required. It checks icon and harness
+mapping, config overrides, and failure exit statuses. The plugin attempts every
+pane update but returns nonzero if any update, agent listing, or JSON parsing
+fails.
+
 ## License
 
 MIT for the code. The glyph in `fonts/CodexIcon.ttf` is traced from OpenAI's

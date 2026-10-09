@@ -6,6 +6,7 @@
 # Icon lookup goes through jq. macOS /bin/bash is 3.2 and has no associative
 # arrays; `declare -A` fails there and every string key collapses to index 0,
 # so a single icons.conf line would be applied to every agent.
+set -o pipefail
 herdr="${HERDR_BIN_PATH:-herdr}"
 
 icons='{"claude":"✺","codex":">_","grok":"𝕏","pi":"π","gemini":"✦","cursor":"➤","open_code":"◇"}'
@@ -35,12 +36,16 @@ fi
   | ($labels[$a.agent] // $a.agent) as $harness
   | ($icons[$a.agent] // "") as $icon
   | $a.pane_id, "\u0000", $harness, "\u0000", $icon, "\u0000"
-' | while IFS= read -r -d '' pane && IFS= read -r -d '' harness && IFS= read -r -d '' icon; do
-  if [ -n "$icon" ]; then
-    "$herdr" pane report-metadata "$pane" \
-      --source agent-icons --display-agent "$icon" --token "harness=$harness" >/dev/null
-  else
-    "$herdr" pane report-metadata "$pane" \
-      --source agent-icons --token "harness=$harness" >/dev/null
-  fi
-done
+' | {
+  status=0
+  while IFS= read -r -d '' pane && IFS= read -r -d '' harness && IFS= read -r -d '' icon; do
+    if [ -n "$icon" ]; then
+      "$herdr" pane report-metadata "$pane" \
+        --source agent-icons --display-agent "$icon" --token "harness=$harness" >/dev/null || status=1
+    else
+      "$herdr" pane report-metadata "$pane" \
+        --source agent-icons --token "harness=$harness" >/dev/null || status=1
+    fi
+  done
+  exit "$status"
+}
