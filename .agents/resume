@@ -10,3 +10,9 @@ for tool in bash jq herdr; do
   fi
 done
 echo "ok: $(jq --version), $(herdr --version)"
+
+# Join the tailnet. Non-fatal: the orb works without it.
+"$(dirname "${BASH_SOURCE[0]}")/tailscale-up" || echo "tailscale-up failed; continuing without Tailscale" >&2
+
+# Join the tailnet last; a Tailscale problem must not fail the orb wake.
+"$(dirname "${BASH_SOURCE[0]}")/tailscale-up" || echo "tailscale-up failed; continuing without Tailscale" >&2

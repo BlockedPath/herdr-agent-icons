@@ -63,4 +63,15 @@ EOF
   echo "appended to $agents_md"
 fi
 
+# --- Tailscale ------------------------------------------------------------
+# Installed but not signed in; .agents/resume joins the tailnet on each wake.
+step "tailscale"
+"$repo_root/.agents/tailscale-install"
+
+# --- Tailscale ------------------------------------------------------------
+# Installed but not signed in, so the snapshot has no machine identity.
+# .agents/resume joins the tailnet on each wake.
+step "tailscale"
+"$repo_root/.agents/tailscale-install"
+
 step "done"
