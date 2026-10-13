@@ -44,7 +44,7 @@ fi
         --source agent-icons --display-agent "$icon" --token "harness=$harness" >/dev/null || status=1
     else
       "$herdr" pane report-metadata "$pane" \
-        --source agent-icons --token "harness=$harness" >/dev/null || status=1
+        --source agent-icons --clear-display-agent --token "harness=$harness" >/dev/null || status=1
     fi
   done
   exit "$status"

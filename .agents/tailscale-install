@@ -17,23 +17,22 @@ curl -fsSL https://pkgs.tailscale.com/stable/debian/bookworm.tailscale-keyring.l
 
 # The package enables and starts tailscaled on install. A temporary
 # policy-rc.d that exits 101 blocks that start; restore whatever was there.
-policy_backup=$(mktemp)
-if [ -e /usr/sbin/policy-rc.d ]; then
-	sudo cp -p /usr/sbin/policy-rc.d "$policy_backup"
-else
-	rm "$policy_backup"
+policy_backup=""
+if [ -e /usr/sbin/policy-rc.d ] || [ -L /usr/sbin/policy-rc.d ]; then
+	policy_backup=$(mktemp)
+	sudo cp -f -P -p /usr/sbin/policy-rc.d "$policy_backup"
 fi
 restore_policy() {
-	if [ -e "$policy_backup" ]; then
-		sudo cp -p "$policy_backup" /usr/sbin/policy-rc.d
-	else
-		sudo rm -f /usr/sbin/policy-rc.d
+	sudo rm -f /usr/sbin/policy-rc.d
+	if [ -n "$policy_backup" ]; then
+		sudo cp -P -p "$policy_backup" /usr/sbin/policy-rc.d
+		# sudo: `cp -p` left the backup root-owned, and a failing EXIT trap
+		# would make the whole script (and .agents/setup) exit non-zero.
+		sudo rm -f "$policy_backup"
 	fi
-	# sudo: `cp -p` left the backup root-owned, and a failing EXIT trap
-	# would make the whole script (and .agents/setup) exit non-zero.
-	sudo rm -f "$policy_backup"
 }
 trap restore_policy EXIT
+sudo rm -f /usr/sbin/policy-rc.d
 printf '#!/bin/sh\nexit 101\n' | sudo tee /usr/sbin/policy-rc.d >/dev/null
 sudo chmod 0755 /usr/sbin/policy-rc.d
 
