@@ -126,8 +126,8 @@ immediately from `apply`.
 
 ## Sidebar
 
-`$harness` is `Pi`, `Claude`, `Codex`, `Grok`, `Gemini`, `Cursor`, or
-`OpenCode`. Any other detected agent id is shown as Herdr reported it.
+`$harness` is `Pi`, `Claude`, `Codex`, `Grok`, `Gemini`, `Cursor`,
+`OpenCode`, or `Muse`. Any other detected agent id is shown as Herdr reported it.
 An empty icon in `icons.conf` keeps that agent's own name in the icon slot
 and still sets `$harness`.
 
@@ -142,6 +142,8 @@ rows = [
     { equals = ">_", fg = "#7b8cff" },
     { equals = "\U000F9000", fg = "#7b8cff" },
     { equals = "π", fg = "#cba6f7" },
+    { equals = "∞", fg = "#0082fb" },
+    { equals = "\U000F9001", fg = "#0082fb" },
     { equals = "𝕏", fg = "#ffffff" },
   ] }],
 ]
@@ -166,6 +168,7 @@ that lists it shows `Local`.
 | gemini | Gemini | ✦ |
 | cursor | Cursor | ➤ |
 | open_code | OpenCode | ◇ |
+| muse | Muse | ∞ |
 
 Override or add icons in `icons.conf`, one `agent=icon` per line. The directory
 is `herdr plugin config-dir blockedpath.agent-icons`. Keys are Herdr's
@@ -298,6 +301,29 @@ above. To go back:
 herdr plugin action invoke blockedpath.agent-icons.apply
 ```
 
+## Optional Muse loop icon
+
+`fonts/MuseIcon.ttf` is a one-glyph font traced from the Muse (Meta) loop.
+Family name `Muse Icon`, PostScript name `MuseIcon-Regular`, glyph U+F9001.
+The default `∞` needs none of this; install the font only for the thicker
+rounded loop, following the same three steps as the Codex cloud above with
+the Muse file, family, and codepoint substituted:
+
+```bash
+# macOS (Linux: ~/.local/share/fonts + fc-cache -f; Windows: install in Windows)
+curl -fsSL -o ~/Library/Fonts/MuseIcon.ttf https://github.com/BlockedPath/herdr-agent-icons/raw/main/fonts/MuseIcon.ttf
+# Ghostty: add `font-family = "Muse Icon"` as an extra fallback, then fully quit it.
+ghostty +list-fonts --family='Muse Icon'   # must show Muse Icon Regular
+printf 'muse=\xf3\xb9\x80\x81\n' >> "$(herdr plugin config-dir blockedpath.agent-icons)/icons.conf"
+herdr plugin action invoke blockedpath.agent-icons.apply
+```
+
+Kitty uses `symbol_map U+F9001 Muse Icon` plus `narrow_symbols U+F9001 1`;
+other terminals follow the Codex steps. Color it with
+`{ equals = "\U000F9001", fg = "#0082fb" }`. To go back to `∞`, delete the
+`muse=` line from `icons.conf` and apply again. Fonts hold one color, so the
+loop is a solid tint, not the blue gradient.
+
 ## Make your own icon
 
 `tools/make-icon-font.py` traces a PNG into a one-glyph font, the same way
@@ -307,17 +333,17 @@ the glyph with a sidebar rule.
 
 ```bash
 pip install fonttools numpy pillow potracer
-python tools/make-icon-font.py icon.png MyIcon.ttf --family "My Icon" --codepoint F9001 --preview preview.png
+python tools/make-icon-font.py icon.png MyIcon.ttf --family "My Icon" --codepoint F9002 --preview preview.png
 ```
 
 - `--codepoint` is a private-use codepoint in hex. Use a new one per icon
-  (`F9001`, `F9002`, ...). `F9000` is the Codex cloud.
+  (`F9002`, `F9003`, ...). `F9000` is the Codex cloud and `F9001` is the Muse loop.
 - `--sharp` keeps hard corners, for pixel art.
 - `--preview` writes a PNG of the trace.
 
 The script writes name IDs 1 through 6 plus the typographic family, and a
 PostScript name with no spaces. That is what macOS and Ghostty need. Install
-the `.ttf` the same way as `CodexIcon.ttf`, add the family to the terminal
+the `.ttf` the same way as `CodexIcon.ttf` or `MuseIcon.ttf`, add the family to the terminal
 fallback, and use the `printf` line the script prints. Replace `AGENT` with
 the agent id.
 
@@ -343,11 +369,13 @@ herdr plugin log list --plugin blockedpath.agent-icons
 `π` and `✺` should come back. Codex stays on U+F9000 only if `icons.conf`
 still sets it.
 
-### Only Codex is a box
+### Only Codex or Muse is a box
 
-The plugin applied U+F9000 and the terminal is not drawing `Codex Icon`.
+The plugin applied U+F9000 (or U+F9001 for Muse) and the terminal is not
+drawing `Codex Icon` (or `Muse Icon`).
 Ghostty: `ghostty +list-fonts --family='Codex Icon'` must show
-`Codex Icon Regular`, not `.LastResort`. Replace the font file, confirm the
+`Codex Icon Regular`, not `.LastResort` (likewise `--family='Muse Icon'`).
+Replace the font file, confirm the
 fallback face, and fully quit the terminal. Config reload does not load fonts.
 
 ### Icons are smaller than the workspace name
@@ -366,5 +394,6 @@ fails.
 ## License
 
 MIT for the code. The glyph in `fonts/CodexIcon.ttf` is traced from OpenAI's
-Codex app icon. That logo belongs to OpenAI and is not covered by the MIT
-license.
+Codex app icon, and the glyph in `fonts/MuseIcon.ttf` is traced from Meta's
+Muse loop. Those logos belong to OpenAI and Meta respectively and are not
+covered by the MIT license.

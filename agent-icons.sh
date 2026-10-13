@@ -9,8 +9,8 @@
 set -o pipefail
 herdr="${HERDR_BIN_PATH:-herdr}"
 
-icons='{"claude":"✺","codex":">_","grok":"𝕏","pi":"π","gemini":"✦","cursor":"➤","open_code":"◇"}'
-labels='{"claude":"Claude","codex":"Codex","grok":"Grok","pi":"Pi","gemini":"Gemini","cursor":"Cursor","open_code":"OpenCode"}'
+icons='{"claude":"✺","codex":">_","grok":"𝕏","pi":"π","gemini":"✦","cursor":"➤","open_code":"◇","muse":"∞"}'
+labels='{"claude":"Claude","codex":"Codex","grok":"Grok","pi":"Pi","gemini":"Gemini","cursor":"Cursor","open_code":"OpenCode","muse":"Muse"}'
 
 conf="${HERDR_PLUGIN_CONFIG_DIR:-}/icons.conf"
 if [ -n "${HERDR_PLUGIN_CONFIG_DIR:-}" ] && [ -f "$conf" ]; then
