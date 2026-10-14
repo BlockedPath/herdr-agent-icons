@@ -18,16 +18,18 @@ fi
 if [ "$1 $2" = 'pane report-metadata' ]; then
   pane=$3
   shift 3
-  icon=null
+  icon=''
   harness=''
   while [ "$#" -gt 0 ]; do
     case "$1" in
       --source) shift 2 ;;
-      --display-agent) icon=$(jq -n --arg icon "$2" '$icon'); shift 2 ;;
+      --display-agent) [ -z "$icon" ] || exit 2; icon=$(jq -n --arg icon "$2" '$icon'); shift 2 ;;
+      --clear-display-agent) [ -z "$icon" ] || exit 2; icon=null; shift ;;
       --token) harness=${2#harness=}; shift 2 ;;
       *) exit 2 ;;
     esac
   done
+  [ -n "$icon" ] || exit 2
   if [ "$pane" = "$TEST_FAIL_PANE" ]; then exit 9; fi
   jq -nc --arg pane "$pane" --arg harness "$harness" --argjson icon "$icon" \
     '{pane: $pane, harness: $harness, icon: $icon}' >> "$TEST_REPORTS"
@@ -52,18 +54,26 @@ assert_reports() {
 printf '%s\n' '{"result":{"agents":[
   {"pane_id":"p1","agent":"claude"},
   {"pane_id":"p2","agent":"codex"},
-  {"pane_id":"p3","agent":"pi"},
-  {"pane_id":"p4","agent":"custom agent"},
-  {"pane_id":"p5","agent":"muse"}
+  {"pane_id":"p3","agent":"grok"},
+  {"pane_id":"p4","agent":"pi"},
+  {"pane_id":"p5","agent":"gemini"},
+  {"pane_id":"p6","agent":"cursor"},
+  {"pane_id":"p7","agent":"open_code"},
+  {"pane_id":"p8","agent":"muse"},
+  {"pane_id":"p9","agent":"custom agent"}
 ]}}' > "$TEST_AGENTS"
 run_plugin
 [ "$status" -eq 0 ]
 assert_reports '[
   {"pane":"p1","harness":"Claude","icon":"✺"},
   {"pane":"p2","harness":"Codex","icon":">_"},
-  {"pane":"p3","harness":"Pi","icon":"π"},
-  {"pane":"p4","harness":"custom agent","icon":null},
-  {"pane":"p5","harness":"Muse","icon":"∞"}
+  {"pane":"p3","harness":"Grok","icon":"𝕏"},
+  {"pane":"p4","harness":"Pi","icon":"π"},
+  {"pane":"p5","harness":"Gemini","icon":"✦"},
+  {"pane":"p6","harness":"Cursor","icon":"➤"},
+  {"pane":"p7","harness":"OpenCode","icon":"◇"},
+  {"pane":"p8","harness":"Muse","icon":"∞"},
+  {"pane":"p9","harness":"custom agent","icon":null}
 ]'
 echo 'PASS distinct defaults and unknown-agent fallback'
 
@@ -73,9 +83,13 @@ run_plugin
 assert_reports '[
   {"pane":"p1","harness":"Claude","icon":"✳"},
   {"pane":"p2","harness":"Codex","icon":null},
-  {"pane":"p3","harness":"Pi","icon":"π"},
-  {"pane":"p4","harness":"custom agent","icon":"two words=icon"},
-  {"pane":"p5","harness":"Muse","icon":"∞"}
+  {"pane":"p3","harness":"Grok","icon":"𝕏"},
+  {"pane":"p4","harness":"Pi","icon":"π"},
+  {"pane":"p5","harness":"Gemini","icon":"✦"},
+  {"pane":"p6","harness":"Cursor","icon":"➤"},
+  {"pane":"p7","harness":"OpenCode","icon":"◇"},
+  {"pane":"p8","harness":"Muse","icon":"∞"},
+  {"pane":"p9","harness":"custom agent","icon":"two words=icon"}
 ]'
 echo 'PASS overrides, empty icons, CRLF, and argument preservation'
 
@@ -85,7 +99,7 @@ for pane in p1 p2; do
   run_plugin
   [ "$status" -ne 0 ] || { echo 'FAIL metadata error was hidden'; exit 1; }
   jq -se --arg failed "$pane" \
-    'map(.pane) == (["p1", "p2", "p3", "p4", "p5"] | map(select(. != $failed)))' \
+    'map(.pane) == (["p1", "p2", "p3", "p4", "p5", "p6", "p7", "p8", "p9"] | map(select(. != $failed)))' \
     "$TEST_REPORTS" > /dev/null
 done
 echo 'PASS metadata failure exit status'

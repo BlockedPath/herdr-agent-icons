@@ -1,6 +1,6 @@
 id = "blockedpath.agent-icons"
 name = "Agent Icons"
-version = "0.1.1"
+version = "0.1.2"
 min_herdr_version = "0.9.3"
 description = "Show icons instead of agent names, and the harness name as $harness"
 platforms = ["linux", "macos"]
